@@ -1,0 +1,12 @@
+diff a/MvcMovie/Program.cs b/MvcMovie/Program.cs	(rejected hunks)
+@@ -1,7 +1,10 @@
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.DependencyInjection;
+ using MvcMovie.Data;
++using MvcMovie.Models;
++
+ var builder = WebApplication.CreateBuilder(args);
++
+ builder.Services.AddDbContext<MvcMovieContext>(options =>
+     options.UseSqlite(builder.Configuration.GetConnectionString("MvcMovieContext") ?? throw new InvalidOperationException("Connection string 'MvcMovieContext' not found.")));
+ 

@@ -1,0 +1,106 @@
+From 65f14e82d322b820ab2037342b975191b87bf459 Mon Sep 17 00:00:00 2001
+From: Paul Easter <paul.john.easter@gmail.com>
+Date: Thu, 6 Apr 2023 23:08:46 +1000
+Subject: [PATCH 2/2] Part 5 Database mods finished
+
+---
+ MvcMovie/Models/SeedData.cs | 56 ++++++++++++++++++++++++++++++++++++++++++++++
+ MvcMovie/Program.cs         | 10 +++++++++
+ 2 files changed, 66 insertions(+)
+ create mode 100644 Models/SeedData.cs
+
+diff --git a/MvcMovie/Models/SeedData.cs b/MvcMovie/Models/SeedData.cs
+new file mode 100644
+index 0000000..f28aaaf
+--- /dev/null
++++ b/MvcMovie/Models/SeedData.cs
+@@ -0,0 +1,56 @@
++using Microsoft.EntityFrameworkCore;
++using MvcMovie.Data;
++
++namespace MvcMovie.Models;
++
++public static class SeedData
++{
++    public static void Initialize(IServiceProvider serviceProvider)
++    {
++        using (var context = new MvcMovieContext(
++            serviceProvider.GetRequiredService<
++                DbContextOptions<MvcMovieContext>>()))
++        {
++            // Look for any movies.
++            if (context.Movie.Any())
++            {
++                return;   // DB has been seeded
++            }
++
++            context.Movie.AddRange(
++                new Movie
++                {
++                    Title = "When Harry Met Sally",
++                    ReleaseDate = DateTime.Parse("1989-2-12"),
++                    Genre = "Romantic Comedy",
++                    Price = 7.99M,
++                },
++
++                new Movie
++                {
++                    Title = "Ghostbusters ",
++                    ReleaseDate = DateTime.Parse("1984-3-13"),
++                    Genre = "Comedy",
++                    Price = 8.99M,
++                },
++
++                new Movie
++                {
++                    Title = "Ghostbusters 2",
++                    ReleaseDate = DateTime.Parse("1986-2-23"),
++                    Genre = "Comedy",
++                    Price = 9.99M,
++                },
++
++                new Movie
++                {
++                    Title = "Rio Bravo",
++                    ReleaseDate = DateTime.Parse("1959-4-15"),
++                    Genre = "Western",
++                    Price = 3.99M,
++                }
++            );
++            context.SaveChanges();
++        }
++    }
++}
+\ No newline at end of file
+diff --git a/MvcMovie/Program.cs b/MvcMovie/Program.cs
+index 4dd4270..00f9c5f 100644
+--- a/MvcMovie/Program.cs
++++ b/MvcMovie/Program.cs
+@@ -1,7 +1,10 @@
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.DependencyInjection;
+ using MvcMovie.Data;
++using MvcMovie.Models;
++
+ var builder = WebApplication.CreateBuilder(args);
++
+ builder.Services.AddDbContext<MvcMovieContext>(options =>
+     options.UseSqlite(builder.Configuration.GetConnectionString("MvcMovieContext") ?? throw new InvalidOperationException("Connection string 'MvcMovieContext' not found.")));
+ 
+@@ -10,6 +13,13 @@ builder.Services.AddControllersWithViews();
+ 
+ var app = builder.Build();
+ 
++using (var scope = app.Services.CreateScope())
++{
++    var services = scope.ServiceProvider;
++
++    SeedData.Initialize(services);
++}
++
+ // Configure the HTTP request pipeline.
+ if (!app.Environment.IsDevelopment())
+ {
+-- 
+2.39.2
+
